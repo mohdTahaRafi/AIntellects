@@ -1,0 +1,44 @@
+# Byte-compiled / cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.cache
+*.log
+
+# Virtual environment
+venv/
+.env
+*.env
+
+# Database and system files
+*.db
+*.sqlite
+dump.rdb  # Redis dump file
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.iml
+
+# Dependency files
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignore large model files
+*.pt
+*.h5
+*.onnx
+
+# Static files
+/static/
+media/
+
+# Ignore node_modules if frontend exists
+node_modules/
+dist/
+build/
+
+# Ignore compiled files
+*.so
+*.dll
