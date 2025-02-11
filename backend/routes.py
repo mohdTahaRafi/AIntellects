@@ -5,6 +5,7 @@ from database import save_detection, get_detections
 from models.suspicious_model import SuspiciousActivityModel
 from models.fire_model import FireDetectionModel
 from utils import encode_image
+from datetime import datetime
 
 router = APIRouter()
 
@@ -28,7 +29,20 @@ async def detect_suspicious_activity(file: UploadFile = File(...)):
 
     # Save to database
     for d in detections:
-        save_detection({"label": d["label"], "confidence": d["confidence"]})
+        save_detection({
+            "label": d["label"],
+            "confidence": d["confidence"],
+            "timestamp": datetime.now(),
+            "image": encode_image(frame)
+        })
 
     # Convert to base64
-   
+    encoded_image = encode_image(frame)
+    return {"image": encoded_image, "detections": detections}
+
+@router.get("/get_detections/")
+async def get_detections():
+    """Fetch detection history."""
+    detections = get_detections()
+    return {"detections": detections}
+

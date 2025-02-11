@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@mui/material';
 import PieCard from './PieCard';
 import BarGraph from './BarGraph';
+import axios from 'axios';
 
 const commonData = [
     { id: 0, value: 45, label: 'Category 1' },
@@ -20,6 +21,21 @@ const barData = [
 const colors = ['#7F2F1B', '#095832', '#584709', '#170503'];
 
 const Dashboard = () => {
+    const [fireDetections, setFireDetections] = useState([]);
+
+    useEffect(() => {
+        const fetchFireDetections = async () => {
+            try {
+                const response = await axios.get('/api/fire_detections');
+                setFireDetections(response.data);
+            } catch (error) {
+                console.error('Error fetching fire detections:', error);
+            }
+        };
+
+        fetchFireDetections();
+    }, []);
+
     return (
         <div>
             <h2>Dashboard</h2>
@@ -59,6 +75,19 @@ const Dashboard = () => {
                 <PieCard title="LANE-2" data={commonData} colors={colors} />
                 <PieCard title="LANE-3" data={commonData} colors={colors} />
                 <PieCard title="LANE-4" data={commonData} colors={colors} />
+            </div>
+            <div style={{ marginTop: '2rem' }}>
+                <h3>Fire Detections</h3>
+                {fireDetections.map((detection, index) => (
+                    <Card key={index} sx={{ marginBottom: '1rem' }}>
+                        <CardContent>
+                            <p><strong>Detected:</strong> {detection.detected ? 'Yes' : 'No'}</p>
+                            <p><strong>Activity Type:</strong> {detection.activity_type}</p>
+                            <p><strong>Confidence:</strong> {detection.confidence}</p>
+                            <p><strong>Timestamp:</strong> {new Date(detection.timestamp).toLocaleString()}</p>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         </div>
     );

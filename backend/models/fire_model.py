@@ -4,8 +4,48 @@ from datetime import datetime
 import time
 import requests
 import json
+import cv2
+from ultralytics import YOLO
+from database import save_traffic_data  # Import save_traffic_data function
+from database import save_detection  # Import save_detection function
 
-model = YOLO('yolov8n.pt')
+class FireDetectionModel:
+    def __init__(self):
+        self.model = YOLO("yolov8n.pt")
+
+    def predict(self, frame):
+        results = self.model(frame)[0]
+        detections = []
+
+        for result in results.boxes.data.tolist():
+            x1, y1, x2, y2, score, class_id = result
+            if int(class_id) == 1:  # Assuming class_id 1 is fire
+                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                cv2.putText(frame, f"Fire ({score:.2f})", (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                detection = {"label": "Fire", "confidence": score}
+                detections.append(detection)
+                save_detection({
+                    "detected": True,
+                    "activity_type": "Fire",
+                    "confidence": score,
+                    "timestamp": datetime.now()
+                })
+
+        return frame, detections
+
+def save_traffic_data(data):
+    """Save traffic data to MongoDB."""
+    save_detection({
+        "lane_1": data.get("lane_1", {}),
+        "lane_2": data.get("lane_2", {}),
+        "lane_3": data.get("lane_3", {}),
+        "lane_4": data.get("lane_4", {}),
+        "timestamp": datetime.now()
+    })
+
+model = FireDetectionModel()
 
 VEHICLE_WEIGHTS = {
     'bicycle': 1,    # class_id: 1
@@ -27,7 +67,7 @@ def map_density_to_time(density):
 
 def process_frame(frame, lane_id):
     vehicle_classes = [1, 2, 3, 5, 7]  # bicycle, car, motorcycle, bus, truck
-    results = model(frame)[0]
+    results = model.model(frame)[0]
     vehicle_count = 0
     traffic_density = 0
     vehicle_counts = {k: 0 for k in VEHICLE_WEIGHTS.keys()}
@@ -38,7 +78,7 @@ def process_frame(frame, lane_id):
         x1, y1, x2, y2, score, class_id = result
         if int(class_id) in vehicle_classes:
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-            class_name = model.names[int(class_id)]
+            class_name = model.model.names[int(class_id)]
             
             # Calculate weighted traffic density
             weight = VEHICLE_WEIGHTS.get(class_name, 1)

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Button, 
   Dialog, 
@@ -6,8 +6,12 @@ import {
   DialogContent, 
   DialogActions,
   ToggleButton,
-  ToggleButtonGroup 
+  ToggleButtonGroup,
+  Card as MuiCard,
+  CardContent 
 } from '@mui/material';
+import axios from 'axios';
+
 const Card = ({ children }) => {
   return (
     <div 
@@ -52,10 +56,6 @@ const ReportCard = ({ report, image, onAction }) => {
   return (
     <Card>
       <div style={{ padding: '1rem' }}>
-        <h3>Report #{report.id}</h3>
-        <p><strong>Reported By:</strong> {report.reportedBy}</p>
-        <p><strong>Location:</strong> {report.location}</p>
-        <p><strong>Incident Type:</strong> {report.incidentType}</p>
         <img
           src={report.image}
           alt="Incident"
@@ -102,40 +102,23 @@ const ReportCard = ({ report, image, onAction }) => {
 
 const Reports = () => {
   const [reportType, setReportType] = useState('ai');
-  
-  const [aiReports, setAiReports] = useState([
-    {
-      id: 1,
-      reportedBy: 'AI System',
-      location: 'Hazratganj Crossing, Lucknow',
-      incidentType: 'Traffic Violation',
-      image: 'https://th.bing.com/th/id/OIP.YiudaKPfvFSXAdOOzst5wAHaEK?w=297&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7'
-    },
-    {
-      id: 2,
-      reportedBy: 'AI System',
-      location: 'Chowk Intersection, Lucknow',
-      incidentType: 'Accident',
-      image: 'https://th.bing.com/th/id/OIP.YiudaKPfvFSXAdOOzst5wAHaEK?w=297&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7'
-    }
-  ]);
+  const [aiReports, setAiReports] = useState([]);
+  const [manualReports, setManualReports] = useState([]);
 
-  const [manualReports, setManualReports] = useState([
-    {
-      id: 1,
-      reportedBy: 'Taha Rafi',
-      location: 'Chowk, Lucknow',
-      incidentType: 'Signal Malfunction',
-      image: 'https://th.bing.com/th/id/OIP.YiudaKPfvFSXAdOOzst5wAHaEK?w=297&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7'
-    },
-    {
-      id: 2,
-      reportedBy: 'Traffic Officer',
-      location: 'Mubeens, Chowk, Lucknow',
-      incidentType: 'Traffic Jam',
-      image: 'https://th.bing.com/th/id/OIP.YiudaKPfvFSXAdOOzst5wAHaEK?w=297&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7'
-    }
-  ]);
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await axios.get('/api/get_detections');
+        const detections = response.data.detections;
+        setAiReports(detections.filter(d => d.label === 'AI System'));
+        setManualReports(detections.filter(d => d.label !== 'AI System'));
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+      }
+    };
+
+    fetchReports();
+  }, []);
 
   const handleReportTypeChange = (event, newType) => {
     if (newType !== null) {

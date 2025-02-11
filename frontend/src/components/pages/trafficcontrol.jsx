@@ -71,8 +71,8 @@ const TrafficControl = () => {
       crossingName: 'Hazratganj Crossing',
       laneNumber: 'Lane 1',
       location: 'Hazratganj, Lucknow',
-      remaining: 100,
-      status: 'off',
+      remaining: 90,
+      status: 'active',
       image: 'https://static.abplive.com/wp-content/uploads/sites/2/2018/09/08132004/Hazrat-ganj-v2.jpg',
     },
     {
@@ -80,8 +80,8 @@ const TrafficControl = () => {
       crossingName: 'Chowk Crossing',
       laneNumber: 'Lane 2',
       location: 'Chowk, Lucknow',
-      remaining: 100,
-      status: 'off',
+      remaining: 80,
+      status: 'active',
       image: 'https://static.abplive.com/wp-content/uploads/sites/2/2018/09/08132004/Hazrat-ganj-v2.jpg',
     },
   ]);
